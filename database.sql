@@ -2,113 +2,123 @@ CREATE DATABASE IF NOT EXISTS remembrew
   CHARACTER SET = utf8mb4
   COLLATE = utf8mb4_ja_0900_as_cs;
 
+
 USE remembrew;
 
-CREATE TABLE IF NOT EXISTS brews (
-  id SMALLINT
-  date DATE
-  blend_id
-  grind
-  beanweight
-  waterweight
-  time
-  temp
-  method
-  water
-  strength
-  acidity
-  water_temp TINYINT UNSIGNED
-  water_mass SMALLINT UNSIGNED
-  bean_mass TINYINT UNSIGNED  
+
+CREATE TABLE IF NOT EXISTS roasts (
+  id SMALLINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  blends_id NOT NULL SMALLINT,
+  percentage TINYINT,
+  country VARCHAR(100),
+  species VARCHAR(100),
+  processing VARCHAR(100),
+  profile VARCHAR(100),
+  remark TEXT,
+  
+  CHECK (percentage BETWEEN 1 AND 100),
+  FOREIGN KEY (blends_id) REFERENCES blends (id) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY (country) REFERENCES roasts_country (country) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY (species) REFERENCES roasts_species (species) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY (processing) REFERENCES roasts_processing (processing) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY (profile) REFERENCES roasts_profile (profile) ON DELETE RESTRICT ON UPDATE CASCADE
   );
 
-CREATE TABLE IF NOT EXISTS brews_grind
-  (grind);
-INSERT IGNORE INTO brews_size (grind) VALUES
-  ("Coarse"),
-  ("Medium Coarse"),
-  ("Medium"),
-  ("Fine"),
-  ("Extra Fine");
+CREATE TABLE IF NOT EXISTS roasts_country (
+  country VARCHAR(100) NOT NULL PRIMARY KEY
+  );
 
-CREATE TABLE IF NOT EXISTS brews_pour
-  (brew_id,
-  water,
-  pour_time,
-  wait_time);
+CREATE TABLE IF NOT EXISTS roasts_species (
+  species VARCHAR(100) NOT NULL PRIMARY KEY
+  );
 
-CREATE TABLE IF NOT EXISTS blends
-  (id SMALLINT
-  name VARCHAR
-  shop VARCHAR
-  date_purchased DATE
-  price );
+CREATE TABLE IF NOT EXISTS roasts_processing (
+  processing VARCHAR(100) NOT NULL PRIMARY KEY
+  );
 
-CREATE TABLE IF NOT EXISTS roasts
-  (id SMALLINT
-  blend
-  percentage
-  date_roasted DATE
-  country
-  species
-  processing
-  profile);
+CREATE TABLE IF NOT EXISTS roasts_profile (
+  profile VARCHAR(100) NOT NULL PRIMARY KEY
+  );
 
-CREATE TABLE IF NOT EXISTS roasts_country
-  (country);
-INSERT IGNORE INTO roasts_country (country) VALUES
-  ("Bolivia"),
-  ("Brazil"),
-  ("Burundi"),
-  ("Colombia"),
-  ("Costa Rica"),
-  ("Ecuador"),
-  ("El Salvador"),
-  ("Ethiopia"),
-  ("Guatemala"),
-  ("Honduras"),
-  ("Indonesia"),
-  ("Jamaica"),
-  ("Kenya"),
-  ("Mexico"),
-  ("Nicaragua"),
-  ("Panama"),
-  ("Peru"),
-  ("Philippines"),
-  ("Rwanda"),
-  ("Tanzania"),
-  ("Thailand"),
-  ("Vietnam"),
-  ("Other");
 
-CREATE TABLE IF NOT EXISTS roasts_species
-  (species);
-INSERT IGNORE INTO roasts_species (species) VALUES
-  ("Arabica"),
-  ("Robusta"),
-  ("Other");
+CREATE TABLE IF NOT EXISTS blends (
+  id SMALLINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  blend_name VARCHAR(100),
+  store VARCHAR(100),
+  price DECIMAL(5,0),
+  remark TEXT,
 
-CREATE TABLE IF NOT EXISTS roasts_processing
-  (processing);
-INSERT IGNORE INTO roasts_processing (processing) VALUES
-  ("Washed"),
-  ("Natural"),
-  ("Pulped Natural"),
-  ("Other");
+  CHECK (price > 0),
+  FOREIGN KEY (store) REFERENCES blends_store (store) ON DELETE RESTRICT ON UPDATE CASCADE
+  );
 
-CREATE TABLE IF NOT EXISTS roasts_profile
-  (profile);
-INSERT IGNORE INTO roasts_profile (profile) VALUES
-  ("Light Roast"),
-  ("Medium Roast"),
-  ("Medium-Dark Roast"),
-  ("Dark Roast"),
-  ("1-Light"),
-  ("2-Cinnamon"),
-  ("3-Medium"),
-  ("4-High"),
-  ("5-City"),
-  ("6-Full City"),
-  ("7-French"),
-  ("8-Italian"),
-  ("Other");
+CREATE TABLE IF NOT EXISTS blends_store (
+  store VARCHAR(100) NOT NULL PRIMARY KEY
+  );
+
+
+CREATE TABLE IF NOT EXISTS beans (
+  id SMALLINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  blends_id SMALLINT NOT NULL,
+  roast_date DATE,
+  buy_date DATE,
+  remark TEXT,
+  
+  FOREIGN KEY blends_id REFERENCES blends_id (id) ON DELETE RESTRICT ON UPDATE CASCADE
+  );
+
+
+CREATE TABLE IF NOT EXISTS brews (
+  id SMALLINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  beans_id SMALLINT NOT NULL,
+  brew_date DATE NOT NULL,
+  brewer VARCHAR(100) NOT NULL,
+  grind VARCHAR(100),
+  method VARCHAR(100),
+  mass TINYINT,
+  water VARCHAR(100),
+  temperature TINYINT,
+  strength TINYINT NOT NULL,
+  acidity TINYINT NOT NULL,
+  rating TINYINT NOT NULL,
+  remark TEXT,
+
+  CHECK (mass > 0),
+  CHECK (temperature BETWEEN 0 AND 100),
+  FOREIGN KEY (beans_id) REFERENCES beans (id) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY (brewer) REFERENCES brews_brewer (brewer) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY (grind) REFERENCES brews_grind (grind) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY (method) REFERENCES brews_method (method) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY (water) REFERENCES brews_water (water) ON DELETE RESTRICT ON UPDATE CASCADE
+  );
+
+CREATE TABLE IF NOT EXISTS brews_brewer (
+  brewer VARCHAR(100) NOT NULL PRIMARY KEY
+  );
+
+CREATE TABLE IF NOT EXISTS brews_grind (
+  grind VARCHAR(100) NOT NULL PRIMARY KEY
+  );
+
+CREATE TABLE IF NOT EXISTS brews_method (
+  method VARCHAR(100) NOT NULL PRIMARY KEY
+  );
+
+CREATE TABLE IF NOT EXISTS brews_water (
+  water VARCHAR(100) NOT NULL PRIMARY KEY
+  );
+
+
+CREATE TABLE IF NOT EXISTS pours (
+  id SMALLINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  brews_id SMALLINT NOT NULL,
+  pour_count TINYINT NOT NULL,
+  volume SMALLINT,
+  pour_time TIME,
+
+  CHECK (pour_count > 0),
+  CHECK (volume > 0),
+  CHECK (pour_time > "00:00:00"),
+  FOREIGN KEY (brews_id) REFERENCES brews (id) ON DELETE RESTRICT ON UPDATE CASCADE
+  );
+
