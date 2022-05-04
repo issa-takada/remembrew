@@ -8,7 +8,7 @@ USE remembrew;
 
 CREATE TABLE IF NOT EXISTS roasts (
   id SMALLINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  blends_id NOT NULL SMALLINT,
+  blends_id SMALLINT NOT NULL,
   percentage TINYINT,
   country VARCHAR(100),
   species VARCHAR(100),
